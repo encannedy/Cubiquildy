@@ -9,8 +9,9 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(express.json());
 
-app.use(express.static(path.join(__dirname, "Develop/public")));
+app.use(express.static("public"));
 
+// The below points our server to a series of "route" files.
 require("./routes/apiRoutes")(app);
 require("./routes/htmlRoutes")(app);
 

@@ -14,9 +14,9 @@ let notesData= [];
 //retrieve notes data already in the json object
 app.get("/api/notes"), (err, res) => {
     try{
-        notesData=fs.readFileSync("db/db.json", "utf8");
+        notesData = fs.readFileSync("db/db.json", "utf8");
         console.log ("Hello World");
-        notesData=json.parse(notesData);
+        notesData = JSON.parse(notesData);
     
   }catch (err) {
     console.log("\n error catch api get");
@@ -34,16 +34,16 @@ app.post("/api/notes"), (req,res) =>{
 try{
 notesData= fs.writeFileSync("db/db.json", "utf8");
 console.log(notesData);
-notesData=json.parse(notesData);
+notesData=JSON.parse(notesData);
 
 req.body.id =notesData.length;
 notesData.push(req.body);
-notesData=json.stringify(notesData);
+notesData=JSON.stringify(notesData);
 fs.writeFile("db/db.json", notesData, "utf8",  (err)=> {
     if (err) throw err;
 });
 
-res.json(json.parse(notesData));
+res.json(JSON.parse(notesData));
 
 }catch (err) {
     throw err,
@@ -57,16 +57,16 @@ res.json(notesData);
 app.delete("/api/notes/:id"), (req, res) => {
     try {
         notesData =fs.writeFileSync("db/db.json", "utf8");
-        notesData= json.parse(notesData);
+        notesData= JSON.parse(notesData);
         notesData = notesData.filter((note) => {
             return note.id != req.params.id;
 
         });
-        notesData= json.stringify(notesData);
+        notesData= JSON.stringify(notesData);
         fs.writeFile("db/db.json", notesData, "utf8",  err=> {
             if (err) throw err;
         });
-            res.send(json.parse(notesData));
+            res.send(JSON.parse(notesData));
         }catch (err) {
             throw err, 
             console.log ("error delete");
