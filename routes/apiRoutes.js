@@ -1,83 +1,68 @@
-const express = require('express');
-const app = express();
 const fs = require('fs');
-const path = require ("path");
+
+let db = require("../db/db");
 
 module.exports = (app) => {
-//initialize notesData
 
-let notesData= [];
+
+let id= "";
 
 //write out your routes to correspond with the front end routes
 //fs readfile and writefile will be in here
 
 //retrieve notes data already in the json object
-app.get("/api/notes"), (err, res) => {
-    try{
-        notesData = fs.readFileSync("db/db.json", "utf8");
-        console.log ("Hello World");
-        notesData = JSON.parse(notesData);
-    
-  }catch (err) {
-    console.log("\n error catch api get");
-    console.log(err);
-  }
-  
-  res.json(notesData);
-};
+
+app.get("/api/notes",  (req, res)=> {
+    fs.readFile('db/db.json', "utf8",  (error, data) =>{
+        res.json(JSON.parse(data));
+    })
+});
 
 //post/write new data to the json object
 //must use json stringify and parse in order to successfully and correctly parse the data
 
-app.post("/api/notes"), (req,res) =>{
+app.post("/api/notes"), async (req,res) =>{
 
-try{
-notesData= fs.writeFileSync("db/db.json", "utf8");
-console.log(notesData);
-notesData=JSON.parse(notesData);
+let newNote = req.body;
 
-req.body.id =notesData.length;
-notesData.push(req.body);
-notesData=JSON.stringify(notesData);
-fs.writeFile("db/db.json", notesData, "utf8",  (err)=> {
+if (db ==="") {newNote.id = 1 
+} else {
+    newNote.id =db[db.length -1].id +1;
+}
+   id= newNote.id;
+   
+   db.push(newNote);
+   
+   let newDB = JSON.stringify(db); 
+   
+   await fs.writeFile("db/db.json", newDB, (err) => {
+
     if (err) throw err;
+    console.log("note saved");
+    res.json(newNote);
 });
 
-res.json(JSON.parse(notesData));
+fs.readFile('db/db.json',"utf8", (error, data) =>{
+    db = JSON.parse(data);
+});
 
-}catch (err) {
-    throw err,
-    console.log ("\n error post api"),
-    console.log(err);
-}
-res.json(notesData);
+
+app.delete("/api/notes/:id", function (req, res) {
+    let choiceId = req.params.id;
+
+    let dbUpdate = db.filter(x => {
+        return x.id != choiceId;
+    })
+   console.log(dbUpdate);
+
+    fs.writeFile("db/db.json", JSON.stringify(dbUpdate), (err) => {
+        if (err) throw err;
+        console.log('The note has been deleted!');
+        db = dbUpdate;
+        res.json({ok:true});
+    });
+
+});
+
 };
-//delete old data from the json object/ delete note using id filter
-
-app.delete("/api/notes/:id"), (req, res) => {
-    try {
-        notesData =fs.writeFileSync("db/db.json", "utf8");
-        notesData= JSON.parse(notesData);
-        notesData = notesData.filter((note) => {
-            return note.id != req.params.id;
-
-        });
-        notesData= JSON.stringify(notesData);
-        fs.writeFile("db/db.json", notesData, "utf8",  err=> {
-            if (err) throw err;
-        });
-            res.send(JSON.parse(notesData));
-        }catch (err) {
-            throw err, 
-            console.log ("error delete");
-        }
-};  
-
-//  GET requests
-
-
-app.get(`/api/notes`, (req, res)=> {
-    res.sendFile(path.join(__dirname, "db/db.json"));
-  });
-
 };
